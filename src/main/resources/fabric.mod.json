@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "oresurvey",
+  "version": "${version}",
+  "name": "OreSurvey",
+  "description": "",
+  "authors": [
+    "Iunius118"
+  ],
+  "contact": {
+    "repo": "https://github.com/Iunius118/OreSurvey"
+  },
+  "license": "MIT License",
+  "icon": "assets/oresurvey/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "com.github.iunius118.oresurvey.client.OreSurveyClient"
+    ],
+    "main": [
+      "com.github.iunius118.oresurvey.OreSurvey"
+    ]
+  },
+  "mixins": [
+    "oresurvey.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "*"
+  }
+}
