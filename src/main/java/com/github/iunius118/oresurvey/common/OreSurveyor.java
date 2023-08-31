@@ -7,7 +7,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class OreSurveyor {
     private final static List<Block> DEFAULT_TARGETS = new ImmutableList.Builder<Block>().add(
@@ -40,7 +42,7 @@ public class OreSurveyor {
     private int sizeX = 128;
     private int sizeZ = 128;
     private int altitudeLow = -63;
-    private int altitudeHigh = 155;
+    private int altitudeHigh = 240;
     private Map<Integer, int[]> results = new LinkedHashMap<>();
     private int countSurvey = 0;
 
@@ -73,7 +75,9 @@ public class OreSurveyor {
     public OreSurveyor surveyOres(Level level, BlockPos pos) {
         for(int h = altitudeLow; h <= altitudeHigh; h++) {
             int[] oreCounts = results.get(h);
-            var aabb = new AABB(pos.getX() - (sizeX >> 2), h, pos.getZ() - (sizeZ >> 2), pos.getX() + sizeX - (sizeX >> 2) - 1, h, pos.getZ() + sizeZ - (sizeZ >> 2) - 1);
+            var aabb = new AABB(
+                    pos.getX() - (sizeX >> 2), h, pos.getZ() - (sizeZ >> 2),
+                    pos.getX() + sizeX - (sizeX >> 2) - 1, h, pos.getZ() + sizeZ - (sizeZ >> 2) - 1);
             level.getBlockStates(aabb).filter(s -> targets.contains(s.getBlock())).forEachOrdered(s -> {
                 var block = s.getBlock();
                 int i = targets.indexOf(block);
