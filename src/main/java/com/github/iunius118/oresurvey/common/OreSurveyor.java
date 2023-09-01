@@ -76,8 +76,8 @@ public class OreSurveyor {
         for(int h = altitudeLow; h <= altitudeHigh; h++) {
             int[] oreCounts = results.get(h);
             var aabb = new AABB(
-                    pos.getX() - (sizeX >> 2), h, pos.getZ() - (sizeZ >> 2),
-                    pos.getX() + sizeX - (sizeX >> 2) - 1, h, pos.getZ() + sizeZ - (sizeZ >> 2) - 1);
+                    pos.getX() - (sizeX >> 1), h, pos.getZ() - (sizeZ >> 1),
+                    pos.getX() + sizeX - (sizeX >> 1) - 1, h, pos.getZ() + sizeZ - (sizeZ >> 1) - 1);
             level.getBlockStates(aabb).filter(s -> targets.contains(s.getBlock())).forEachOrdered(s -> {
                 var block = s.getBlock();
                 int i = targets.indexOf(block);
