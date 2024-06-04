@@ -3,6 +3,11 @@
 
 ## [Unreleased]
 
+## [1.2.1]
+### Changed
+- Port to 1.20.6.
+- Require Fabric Loader 0.15.11 and Fabric API 0.99.4+.
+
 ## [1.2.0]
 ### Added
 - Readme and changelog into .jar file.
@@ -10,7 +15,7 @@
 
 ### Changed
 - Port to 1.20.2.
-- Require Fabric Loader 0.14.22 and Fabric API 0.89.1+1.20.2.
+- Require Fabric Loader 0.14.22 and Fabric API 0.89.1+.
 
 ## [1.1.1]
 ### Fixed
@@ -23,5 +28,4 @@
 
 ## [1.0.0]
 - First release.
-- Require Minecraft 23w32a, Fabric Loader 0.14.22, and Fabric API 0.87.0+1.20.2.
-
+- Require Minecraft 23w32a, Fabric Loader 0.14.22, and Fabric API 0.87.0+.

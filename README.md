@@ -13,12 +13,11 @@ The default hotkeys are as follows:
 
 The surveyed range is between the following two coordinates:
 
-- (PlayerPosX - 64, -63, PlayerPosZ - 64)
-- (PlayerPosX + 63, 240, PlayerPosZ + 63)
+- `(PlayerPosX - 64, -63, PlayerPosZ - 64)`
+- `(PlayerPosX + 63, 240, PlayerPosZ + 63)`
 
 ## Licenses
 
 - MIT License
 
-----
 &copy; 2023 Iunius118
