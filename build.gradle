@@ -65,7 +65,7 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archivesBaseName}.txt"}
     }
-    from("README.md", "CHANGELOG.txt")
+    from("CHEATSHEET.txt", "CHANGELOG.txt")
 }
 
 publishing {
