@@ -24,4 +24,4 @@ Here is an example of an output TSV file: [20240605_205633_751.tsv](./docs/oresu
 
 ## License
 
-Licensed under the MIT License.
+This project is licensed under the MIT license.

@@ -10,7 +10,7 @@
   "contact": {
     "repo": "https://github.com/Iunius118/OreSurvey"
   },
-  "license": "MIT License",
+  "license": "MIT license",
   "icon": "assets/oresurvey/icon.png",
   "environment": "*",
   "entrypoints": {
