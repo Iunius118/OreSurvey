@@ -1,6 +1,6 @@
 # OreSurvey
 
-A Minecraft mod for FabricMC that counts the number of ores in the area where the player is located and saves the report in the tab-separated values (TSV) format.
+A Minecraft mod for Forge that counts the number of ores in the area where the player is located and saves the report in the tab-separated values (TSV) format.
 
 ## Usage
 
@@ -11,7 +11,8 @@ The default hotkeys are as follows:
 - KEY_LBRACKET - Count up the number of ores in the area
 - KEY_BACKSLASH - Save the number of ores in the TSV format
 
-The count-up key adds the number of ores each time it is pressed until the save key is pressed. This is useful for summing the results of multiple sample locations.
+The count-up key adds the number of ores each time it is pressed until the save key is pressed.
+This is useful for summing the results of multiple sample locations.
 
 The surveyed range is between the following two coordinates:
 
@@ -21,6 +22,13 @@ The surveyed range is between the following two coordinates:
 The output TSV file will be saved in `<instance_dir>/oresurvey`.
 
 Here is an example of an output TSV file: [20240605_205633_751.tsv](./docs/oresurvey/20240605_205633_751.tsv).
+
+### Config
+
+`config/oresurvey-client.toml`
+
+If the boolean `useDefaultOreList` is `true`, the default set of blocks is used for surveys, otherwise the set of blocks in `customOreList` is used.
+An array of strings in `customOreList` represents the block IDs to be surveyed.
 
 ## License
 
