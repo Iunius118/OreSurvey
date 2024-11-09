@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class OreSurveyor {
-    private final static List<Block> DEFAULT_TARGETS = new ImmutableList.Builder<Block>().add(
+    private static final List<Block> DEFAULT_TARGETS = new ImmutableList.Builder<Block>().add(
             Blocks.STONE,
             Blocks.COAL_ORE,
             Blocks.COPPER_ORE,
@@ -37,43 +37,50 @@ public class OreSurveyor {
             Blocks.NETHER_GOLD_ORE,
             Blocks.ANCIENT_DEBRIS
     ).build();
+    private static final int DEFAULT_SIZE_X = 128;
+    private static final int DEFAULT_SIZE_Z = 128;
+    private static final int DEFAULT_ALTITUDE_LOW = -63;
+    private static final int DEFAULT_ALTITUDE_HIGH = 240;
 
     private final List<Block> targets;
-    private int sizeX = 128;
-    private int sizeZ = 128;
-    private int altitudeLow = -63;
-    private int altitudeHigh = 240;
-    private Map<Integer, int[]> results = new LinkedHashMap<>();
+    private final int sizeX;
+    private final int sizeZ;
+    private final int altitudeLow;
+    private final int altitudeHigh;
+
+    private final Map<Integer, int[]> results = new LinkedHashMap<>();
     private int countSurvey = 0;
 
+    private OreSurveyor(List<Block> targetList, int x, int z, int y1, int y2) {
+        targets = targetList;
+        sizeX = x;
+        sizeZ = z;
+        altitudeLow = Math.min(y1, y2);
+        altitudeHigh = Math.max(y1, y2);
+
+        initResultMap();
+    }
+
     public static OreSurveyor of (List<Block> targetList, int x, int z, int y1, int y2){
-        var oreSurveyor = new OreSurveyor(targetList);
-        oreSurveyor.sizeX = x;
-        oreSurveyor.sizeZ = z;
-        oreSurveyor.altitudeLow = Math.min(y1, y2);
-        oreSurveyor.altitudeHigh = Math.max(y1, y2);
-        oreSurveyor.initResultMap();
-        return oreSurveyor;
+        return new OreSurveyor(targetList, x, z, y1, y2);
+    }
+
+    public static OreSurveyor of (List<Block> targetList){
+        return of(targetList, DEFAULT_SIZE_X, DEFAULT_SIZE_Z, DEFAULT_ALTITUDE_LOW, DEFAULT_ALTITUDE_HIGH);
     }
 
     public static OreSurveyor ofDefault (){
-        var oreSurveyor = new OreSurveyor(DEFAULT_TARGETS);
-        oreSurveyor.initResultMap();
-        return oreSurveyor;
-    }
-
-    private OreSurveyor(List<Block> targetList) {
-        targets = targetList;
+        return of(DEFAULT_TARGETS);
     }
 
     private void initResultMap() {
-        for(int h = altitudeLow; h <= altitudeHigh; h++) {
+        for (int h = altitudeLow; h <= altitudeHigh; h++) {
             results.put(h, new int[targets.size()]);
         }
     }
 
-    public OreSurveyor surveyOres(Level level, BlockPos pos) {
-        for(int h = altitudeLow; h <= altitudeHigh; h++) {
+    public void surveyOres(Level level, BlockPos pos) {
+        for (int h = altitudeLow; h <= altitudeHigh; h++) {
             int[] oreCounts = results.get(h);
             var aabb = new AABB(
                     pos.getX() - (sizeX >> 1), h, pos.getZ() - (sizeZ >> 1),
@@ -89,7 +96,6 @@ public class OreSurveyor {
         }
 
         countSurvey++;
-        return this;
     }
 
     public int getSurveyCount() {

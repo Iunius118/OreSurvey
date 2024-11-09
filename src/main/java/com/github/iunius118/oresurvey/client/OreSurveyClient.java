@@ -1,21 +1,24 @@
 package com.github.iunius118.oresurvey.client;
 
+import com.github.iunius118.oresurvey.OreSurvey;
+import com.github.iunius118.oresurvey.common.OreSurveyConfig;
 import com.github.iunius118.oresurvey.common.OreSurveyor;
 import com.mojang.blaze3d.platform.InputConstants;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,29 +29,36 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
+import java.util.function.Consumer;
 
-public class OreSurveyClient implements ClientModInitializer {
-    public static final String MOD_ID = "oresurvey";
-    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-
+public class OreSurveyClient {
     private static OreSurveyor oreSurveyor;
 
-    @Override
-    public void onInitializeClient() {
-        bindKeys();
+    public OreSurveyClient(IEventBus modEventBus) {
+        bindKeys(modEventBus);
+        modEventBus.addListener(OreSurveyConfig.Client::onLoad);
     }
 
-    private void bindKeys() {
-        KeyMapping keySurvey = KeyBindingHelper.registerKeyBinding(createKeyBinding("survey", InputConstants.KEY_LBRACKET, "main"));
-        KeyMapping keyResult = KeyBindingHelper.registerKeyBinding(createKeyBinding("result", InputConstants.KEY_BACKSLASH, "main"));
+    public void bindKeys(IEventBus modEventBus) {
+        KeyMapping keySurvey = createKeyBinding("survey", InputConstants.KEY_LBRACKET, "main");
+        KeyMapping keyResult = createKeyBinding("result", InputConstants.KEY_BACKSLASH, "main");
 
-        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+        // Register key bind event listener
+        Consumer<RegisterKeyMappingsEvent> registerKeyMappingsListener = event -> {
+            event.register(keySurvey);
+            event.register(keyResult);
+        };
+
+        modEventBus.addListener(registerKeyMappingsListener);
+
+        // Register key click event listener
+        Consumer<TickEvent.ClientTickEvent> clientTickEventListener = event -> {
+            Minecraft client = Minecraft.getInstance();
+
             while (keySurvey.consumeClick()) {
                 if (oreSurveyor == null) {
-                    oreSurveyor = OreSurveyor.ofDefault();
+                    oreSurveyor = createOreSurveyor();
                 }
 
                 surveyOres(oreSurveyor, client);
@@ -56,18 +66,36 @@ public class OreSurveyClient implements ClientModInitializer {
 
             while (keyResult.consumeClick()) {
                 if (oreSurveyor == null) {
-                    oreSurveyor = OreSurveyor.ofDefault();
+                    oreSurveyor = createOreSurveyor();
                     surveyOres(oreSurveyor, client);
                 }
 
                 saveResult(oreSurveyor);
                 oreSurveyor = null;
             }
-        });
+        };
+
+        MinecraftForge.EVENT_BUS.addListener(clientTickEventListener);
     }
 
     private KeyMapping createKeyBinding(String name, int key, String category) {
-        return new KeyMapping("key." + MOD_ID + "." + name, key, "key.categories." + MOD_ID + "." + category);
+        return new KeyMapping("key." + OreSurvey.MOD_ID + "." + name, key, "key.categories." + OreSurvey.MOD_ID + "." + category);
+    }
+
+    private OreSurveyor createOreSurveyor() {
+        if (OreSurveyConfig.client().useDefaultOreList()) {
+            return OreSurveyor.ofDefault();
+        }
+
+        List<String> blockIds = OreSurveyConfig.client().customOreList();
+        List<Block> blocks = blockIds.stream()
+                .map(ResourceLocation::new)
+                .map(ForgeRegistries.BLOCKS::getHolder)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .map(Holder::value)
+                .toList();
+        return OreSurveyor.of(blocks);
     }
 
     private void surveyOres(OreSurveyor oreSurveyor, Minecraft client) {
@@ -82,7 +110,7 @@ public class OreSurveyClient implements ClientModInitializer {
             surveyOres(oreSurveyor, player.level(), pos);
             client.player.displayClientMessage(createChatMessage(Component.literal("Survey ores: #" + oreSurveyor.getSurveyCount())), false);
         } catch (Exception e) {
-            LOGGER.warn("surveyOres:%n", e);
+            OreSurvey.LOGGER.warn("surveyOres:%n", e);
         }
     }
 
@@ -90,27 +118,27 @@ public class OreSurveyClient implements ClientModInitializer {
         oreSurveyor.surveyOres(level, pos);
     }
 
-    private void  saveResult(OreSurveyor oreSurveyor) {
+    private void saveResult(OreSurveyor oreSurveyor) {
         Minecraft client = Minecraft.getInstance();
         File gameDirectory = client.gameDirectory;
         String filename = getTimestamp() + ".tsv";
 
-        var path = Paths.get(gameDirectory.getPath(), MOD_ID, filename);
+        var path = Paths.get(gameDirectory.getPath(), OreSurvey.MOD_ID, filename);
 
         try {
             // Create parent dirs
             Files.createDirectories(path.getParent());
         } catch (IOException e) {
-            LOGGER.warn("saveResult:%n", e);
+            OreSurvey.LOGGER.warn("saveResult:%n", e);
         }
 
         try (BufferedWriter bufferedWriter = Files.newBufferedWriter(path, StandardCharsets.UTF_8);
              PrintWriter writer = new PrintWriter(bufferedWriter)) {
             printResult(writer, oreSurveyor);
             if (client.player != null)
-                client.player.displayClientMessage(createChatMessage(Component.literal("Result saved as " + Paths.get(MOD_ID, filename))), false);
+                client.player.displayClientMessage(createChatMessage(Component.literal("Result saved as " + Paths.get(OreSurvey.MOD_ID, filename))), false);
         } catch (IOException e) {
-            LOGGER.warn("saveResult:%n", e);
+            OreSurvey.LOGGER.warn("saveResult:%n", e);
         }
     }
 
@@ -126,8 +154,8 @@ public class OreSurveyClient implements ClientModInitializer {
         // Write header record
         StringJoiner header = new StringJoiner("\t").add("Layer");
 
-        for(Block block : result.ores()) {
-            header.add(BuiltInRegistries.BLOCK.getKey(block).toString());
+        for (Block block : result.ores()) {
+            header.add(ForgeRegistries.BLOCKS.getKey(block).toString());
         }
 
         writer.println(header);
@@ -135,11 +163,11 @@ public class OreSurveyClient implements ClientModInitializer {
         // Write data records
         Set<Map.Entry<Integer, int[]>> entries = result.data().entrySet();
 
-        for(Map.Entry<Integer, int[]> entry : entries) {
+        for (Map.Entry<Integer, int[]> entry : entries) {
             StringJoiner data = new StringJoiner("\t");
             data.add(entry.getKey().toString());
 
-            for(int value : entry.getValue()) {
+            for (int value : entry.getValue()) {
                 data.add(String.valueOf(value));
             }
 
