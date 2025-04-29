@@ -1,7 +1,7 @@
 # Cheatsheet
 
 [OreSurvey](https://github.com/Iunius118/OreSurvey)
-version 1.3.0.
+version 1.3.1.
 
 A Minecraft mod for FabricMC that counts the number of ores in the area where the player is located and saves the report in the tab-separated values (TSV) format.
 
