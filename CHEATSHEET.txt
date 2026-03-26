@@ -1,9 +1,9 @@
 # Cheatsheet
 
 [OreSurvey](https://github.com/Iunius118/OreSurvey)
-version 1.3.1.
+version 1.5.0.
 
-A Minecraft mod for FabricMC that counts the number of ores in the area where the player is located and saves the report in the tab-separated values (TSV) format.
+A Minecraft mod that counts the number of each ore in the player's current area and saves the report in tab-separated values (TSV) format. This mod requires Fabric.
 
 ## Usage
 
@@ -11,10 +11,10 @@ This mod works on the client.
 
 The default hotkeys are as follows:
 
-- KEY_LBRACKET - Count up the number of ores in the area
-- KEY_BACKSLASH - Save the number of ores in the TSV format
+- KEY_LBRACKET - Counts the quantity of each ore type within a certain range
+- KEY_BACKSLASH - Saves the count of each ore in TSV format
 
-The count-up key adds the number of ores each time it is pressed until the save key is pressed. This is useful for summing the results of multiple sample locations.
+Each press of the count-up key adds to the count of each ore until the save key is pressed. This is useful for combining results from multiple sample locations.
 
 The surveyed range is between the following two coordinates:
 

@@ -2,6 +2,8 @@
 [OreSurvey (source)](https://github.com/Iunius118/OreSurvey).
 
 ## [Unreleased]
+
+## [1.5.0]
 ### Changed
 - Port to 26.1.
 - Require Fabric Loader 0.18.4 and Fabric API 0.144.3+.
