@@ -4,7 +4,7 @@ import com.github.iunius118.oresurvey.common.OreSurveyor;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import org.slf4j.Logger;
@@ -42,8 +43,9 @@ public class OreSurveyClient implements ClientModInitializer {
     }
 
     private void bindKeys() {
-        KeyMapping keySurvey = KeyBindingHelper.registerKeyBinding(createKeyBinding("survey", InputConstants.KEY_LBRACKET, "main"));
-        KeyMapping keyResult = KeyBindingHelper.registerKeyBinding(createKeyBinding("result", InputConstants.KEY_BACKSLASH, "main"));
+        KeyMapping.Category keyCategoryMain = new KeyMapping.Category(Identifier.fromNamespaceAndPath(MOD_ID, "main"));
+        KeyMapping keySurvey = KeyMappingHelper.registerKeyMapping(createKeyMapping("survey", InputConstants.KEY_LBRACKET, keyCategoryMain));
+        KeyMapping keyResult = KeyMappingHelper.registerKeyMapping(createKeyMapping("result", InputConstants.KEY_BACKSLASH, keyCategoryMain));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keySurvey.consumeClick()) {
@@ -66,8 +68,8 @@ public class OreSurveyClient implements ClientModInitializer {
         });
     }
 
-    private KeyMapping createKeyBinding(String name, int key, String category) {
-        return new KeyMapping("key." + MOD_ID + "." + name, key, "key.categories." + MOD_ID + "." + category);
+    private KeyMapping createKeyMapping(String name, int key, KeyMapping.Category category) {
+        return new KeyMapping("key." + MOD_ID + "." + name, key, category);
     }
 
     private void surveyOres(OreSurveyor oreSurveyor, Minecraft client) {
@@ -80,7 +82,7 @@ public class OreSurveyClient implements ClientModInitializer {
 
         try {
             surveyOres(oreSurveyor, player.level(), pos);
-            client.player.displayClientMessage(createChatMessage(Component.literal("Survey ores: #" + oreSurveyor.getSurveyCount())), false);
+            client.player.sendSystemMessage(createChatMessage(Component.literal("Survey ores: #" + oreSurveyor.getSurveyCount())));
         } catch (Exception e) {
             LOGGER.warn("surveyOres:%n", e);
         }
@@ -108,7 +110,7 @@ public class OreSurveyClient implements ClientModInitializer {
              PrintWriter writer = new PrintWriter(bufferedWriter)) {
             printResult(writer, oreSurveyor);
             if (client.player != null)
-                client.player.displayClientMessage(createChatMessage(Component.literal("Result saved as " + Paths.get(MOD_ID, filename))), false);
+                client.player.sendSystemMessage(createChatMessage(Component.literal("Result saved as " + Paths.get(MOD_ID, filename))));
         } catch (IOException e) {
             LOGGER.warn("saveResult:%n", e);
         }
@@ -148,6 +150,7 @@ public class OreSurveyClient implements ClientModInitializer {
     }
 
     private Component createChatMessage(MutableComponent message) {
-        return Component.literal("").append(Component.literal("[OreSurvey] ").withStyle(ChatFormatting.YELLOW)).append(message.withStyle(ChatFormatting.RESET));
+        return Component.literal("").append(Component.literal("[OreSurvey] ")
+                .withStyle(ChatFormatting.YELLOW)).append(message.withStyle(ChatFormatting.RESET));
     }
 }
